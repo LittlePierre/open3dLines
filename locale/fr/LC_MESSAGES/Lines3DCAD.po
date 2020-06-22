@@ -1,0 +1,71 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2020-06-11 07:02+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.6\n"
+
+#: rightPanel.py:21 rightPanel.py:102
+msgid "Add Layer"
+msgstr "Ajouter couche"
+
+#: rightPanel.py:22
+msgid "Del Layer"
+msgstr "Supp couche"
+
+#: leftPanel.py:11
+msgid "Depth View"
+msgstr "Profondeur de travail"
+
+#: rightPanel.py:17
+msgid "Enter First Point"
+msgstr "Entrez le premier point"
+
+#: stateMachine.py:79
+msgid "Enter first Point"
+msgstr "Entrez le premier point"
+
+#: stateMachine.py:57
+msgid "Enter second Point"
+msgstr "Entrez le second point"
+
+#: rightPanel.py:24
+msgid "Hide All"
+msgstr "Tout cacher"
+
+#: rightPanel.py:23
+msgid "Show All"
+msgstr "Tout montrer"
+
+#. ,style=wx.TE_MULTILINE)#|wx.TE_PROCESS_ENTER)
+#: leftPanel.py:13
+msgid "add 3D Line"
+msgstr "ajouter ligne 3D"
+
+#. visibleST = wx.StaticText(dialog, label="visible",size=(140,-1))
+#: rightPanel.py:111 rightPanel.py:172
+msgid "color"
+msgstr "Couleur"
+
+#: rightPanel.py:109 rightPanel.py:173
+msgid "name"
+msgstr "Nom"
+
+#: rightPanel.py:171
+msgid "visible"
+msgstr "Visible"
+
+#: rightPanel.py:112 rightPanel.py:174
+msgid "width"
+msgstr "Largeur"

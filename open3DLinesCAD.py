@@ -1,0 +1,60 @@
+import wx
+from cadwindow import CADWindow
+from rightPanel import RightPanel
+from leftPanel import LeftPanel
+from lowerPanel import LowerPanel
+class Panel(wx.Panel):
+    def __init__(self, root):
+        wx.Panel.__init__(self, root)#, style=wx.WANTS_CHARS)
+        self.mainSizer = wx.BoxSizer(wx.VERTICAL)
+        self.middleSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.cadWindow = CADWindow(self,root)
+        self.cadWindow.SetFocus()
+        self.leftPanel = LeftPanel(self,root)
+        self.rightPanel = RightPanel(self,root)
+        self.middleSizer.Add(self.leftPanel.buttonsSizer, 1, wx.EXPAND)
+        self.middleSizer.Add(self.cadWindow, 4, wx.EXPAND)
+        self.middleSizer.Add(self.rightPanel.rightsizer, 1, wx.EXPAND)
+
+        self.lowerPanel = LowerPanel(self,root)
+        self.mainSizer.Add(self.middleSizer, 1, wx.EXPAND)
+        self.mainSizer.Add(self.lowerPanel.lowerSizer,0,wx.EXPAND)
+        self.SetSizerAndFit(self.mainSizer)
+        
+class MainWindow(wx.Frame):
+    def __init__(self, parent, title):
+        wx.Frame.__init__(self, parent, title=title,size=(-1,-1))#, size=(self.windowx,self.windowy))
+        size = wx.GetDisplaySize()
+        print(size)
+#         self.SetMinSize(size)
+        self.CreateStatusBar()
+        # Setting up the menu.
+        filemenu= wx.Menu()
+#         menuOpen = filemenu.Append(wx.ID_OPEN, "&Open"," Open a file to edit")
+#         menuAbout= filemenu.Append(wx.ID_ABOUT, "&About"," Information about this program")
+        menuExit = filemenu.Append(wx.ID_EXIT,"E&xit"," Terminate the program")
+        menuBar = wx.MenuBar()
+        menuBar.Append(filemenu,"&File") # Adding the "filemenu" to the MenuBar
+        self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
+        self.panel = Panel(self)
+        self.setFocus()
+        self.Show(True)
+        self.Maximize(True)
+#         self.ShowFullScreen(True)
+        self.Bind(wx.EVT_MENU, self.quit, menuExit)
+    def setFocus(self):
+        self.panel.cadWindow.SetFocus()
+#         self.SetFocus()
+    def quit(self,event):
+        print (event)
+        print("mainquit")
+        self.Close(True)
+
+
+if __name__ == "__main__":
+        app = wx.App(False)
+        gui = MainWindow(None, "test")
+#         import wx.lib.inspection
+#         wx.lib.inspection.InspectionTool().Show()
+        app.MainLoop()
+
