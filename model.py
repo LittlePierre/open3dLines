@@ -76,12 +76,12 @@ class Model(SingletonModel):
 #             self.photogramInit()
     def addElements(self,elements,layer=None,updateHistory = True):
         actionCode = ADD_ACTIONS
-        ident = None
-        element3d = None
         if not isinstance(elements, list):
             elements = [elements]
         args = []
         for element in elements :
+            element3d = None
+            ident = None
             if isinstance(element, dict):
                 ident = element.get("ident",None)
                 element3d  = element.get("element",None)
@@ -205,7 +205,8 @@ class Model(SingletonModel):
         p1_3d =self.cam.view2Model(p1_2d)
         return [p1_3d,p1_2d,None]
     def getParallel(self,idSelected,parallelDist,x,y):
-#         idSelected = 10
+        if idSelected is None:
+            return None
         element3d = self.elements3d[idSelected].get("element")
         if isinstance(element3d,Line3D):
             pMouseCam = self.cam.view2Cam(Point2D([float(x),float(y)]))
@@ -237,8 +238,22 @@ class Model(SingletonModel):
         pass
     def RotateElement(self,element,axis,angle,nbcopies):
         pass
-    def TranslateElement(self,element,translation,nbcopies):
-        pass
+    def TranslateSelection(self,selList,translation,keep,nb):
+        if nb ==1 :
+            nb= 2
+        print ("translate Selection",selList,translation,keep,nb)
+        listToTranslate = []
+        for identifier in selList : 
+            listToTranslate.append(self.elements3d[identifier].get("element",None))
+        ListTranslated = []
+        for element in listToTranslate :
+            for nbtrans in range(nb-1):
+                trans = translation.scale(nbtrans+1)
+                ListTranslated.append(element.translate(trans))
+        self.addElements(ListTranslated,layer=None, updateHistory=True)
+        if not keep :
+            self.delete(selList, updateHistory=True)
+
     def popElement(self,id):
         pass
     def getAssociatedElement(self,element):

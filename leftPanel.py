@@ -30,7 +30,7 @@ class ListViewComboPopup(wx.ComboPopup):
         actionIndex = event.Index
         self.value = actionIndex
         dictActions = {0:{'func':self.Add3dLine,"text":_("Add 3d Line")},
-                       1:{'func':self.AddParalel,"text":_("Add Parallel")}
+                       1:{'func':self.AddParalel,"text":_("Add parallel(cam plane)")}
                           }
         action = dictActions.get(actionIndex).get("func")
         text =  dictActions.get(actionIndex).get("text")
@@ -41,22 +41,21 @@ class ListViewComboPopup(wx.ComboPopup):
         self.pnl.cadWindow.setStateMachine(StateMachineList.lineStateMachine)
     def AddParalel(self):
         self.pnl.cadWindow.setStateMachine(StateMachineList.parallelStateMachine)
-        print("addParallel")
 class LeftPanel():
     def __init__(self,pnl,root):
         self.pnl = pnl
         self.root = root
         self.cam = Camera()
         self.buttonsSizer = wx.BoxSizer(wx.VERTICAL)
-        self.depthlabel = wx.StaticText(pnl, label=_("Depth View"),size=(140,-1))
+        self.depthlabel = wx.StaticText(pnl, label=_("Working cam depth"),size=(140,-1))
         self.depthcontrol = wx.TextCtrl(pnl, value="",size=(140,-1),style=wx.TE_PROCESS_ENTER)#,style=wx.TE_MULTILINE)#|wx.TE_PROCESS_ENTER)
-        self.lineComboCtrl = wx.ComboCtrl(pnl,value= _("Add Line"))
+        self.lineComboCtrl = wx.ComboCtrl(pnl,value= _("Add Line"),style =wx.TE_READONLY)
         self.popupCtrl = ListViewComboPopup(pnl,root)
         self.lineComboCtrl.SetPopupControl(self.popupCtrl)
         self.popupCtrl.AddItem(_("Add 3d line"))
-        self.popupCtrl.AddItem(_("Add parallel"))
-        self.buttonTranslate = wx.Button(pnl,label=_("Translate"),size=(-1,-1))
-        self.buttonRotate = wx.Button(pnl,label=_("Rotate"),size=(-1,-1))
+        self.popupCtrl.AddItem(_("Add parallel(cam plane)"))
+        self.buttonTranslate = wx.Button(pnl,label=_("Translate selected"),size=(-1,-1))
+        self.buttonRotate = wx.Button(pnl,label=_("Rotate selected"),size=(-1,-1))
         self.buttonsSizer.Add(self.depthlabel, 0, wx.EXPAND)
         self.buttonsSizer.Add(self.depthcontrol, 0, wx.EXPAND)
         self.buttonsSizer.Add(self.lineComboCtrl,0,wx.EXPAND)
@@ -86,9 +85,42 @@ class LeftPanel():
         self.pnl.cadWindow.model.RotateSelection()
         print ("ROtate")
     def onTranslateSelection(self,event):
-        x,y,z,keepOriginal,nbrepeats
-        self.pnl.cadWindow.model.TranslateSelection()
+        self.selectionDone = False
+        self.selectionList = self.pnl.cadWindow.stateMachine.idSelectedList
+        if len(self.selectionList)>0:
+            self.pnl.cadWindow.setStateMachine(StateMachineList.translateStateMachine)
+            self.selectionDone = True
+#         translateClass = Translate(self.pnl)
+#         translateClass.selectTranslationVector()
+#         translateClass.dspDialog()
+        """State Machine Translate"
+        "Enter First Point or select on screen"
+        "Enter second point or select on screen"
+        "class Dialog => keep original,nb repeats including original """
+#         [x,y,z,keepOriginal,nbrepeats]=translateClass.getParameters()
+#         self.pnl.cadWindow.model.TranslateSelection(x,y,z,keepOriginal,nbrepeats)
         print ("Translate")
-
-
-
+    def notifyTranslate(self,translation):
+        self.dialog = wx.Dialog(self.root,title=_("Translate"))
+        dialog = self.dialog
+        Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.nbRepeatST = wx.StaticText(dialog,label=_("nb repeat inc original"),size = (140,-1))
+        nbrepeatTC = wx.TextCtrl(dialog, value="1",size=(140,-1))
+        self.keepST = wx.StaticText(dialog,label=_("keep original"),size = (140,-1))
+        keepCB = wx.CheckBox(dialog)
+        buttonSizer = dialog.CreateStdDialogButtonSizer(flags = wx.OK| wx.CANCEL)
+        dialog.CreateSeparatedSizer(buttonSizer)
+        Sizer.Add(self.nbRepeatST, 0,wx.EXPAND)
+        Sizer.Add(nbrepeatTC, 0,wx.EXPAND)
+        Sizer.Add(self.keepST, 0,wx.EXPAND)
+        Sizer.Add(keepCB, 0,wx.EXPAND)
+        Sizer.Add(buttonSizer,0,wx.EXPAND)
+        dialog.SetSizer(Sizer)
+        if dialog.ShowModal() == wx.ID_OK:
+            try :
+                nbrepeat =int(nbrepeatTC.GetLineText(0))
+                keep = keepCB.GetValue()
+                self.pnl.cadWindow.model.TranslateSelection(self.selectionList,translation,keep,nbrepeat)
+                self.pnl.cadWindow.refresh()
+            except :
+                pass

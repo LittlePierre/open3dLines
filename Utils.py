@@ -25,6 +25,7 @@ class StateMachineList():
     lineStateMachine = 0
     parallelStateMachine = 1
     selectStateMachine =2
+    translateStateMachine= 3
 
 class SingletonIdGenerator(object):
     __instance = None

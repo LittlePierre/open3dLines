@@ -25,8 +25,7 @@ class MainWindow(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title,size=(-1,-1))#, size=(self.windowx,self.windowy))
         size = wx.GetDisplaySize()
-        print(size)
-#         self.SetMinSize(size)
+        self.SetMinSize((800,400))
         self.CreateStatusBar()
         # Setting up the menu.
         filemenu= wx.Menu()

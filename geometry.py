@@ -173,6 +173,8 @@ class Point3D():
         return Point3D([self.x*scale,self.y*scale,self.z*scale])
     def add(self,other):
         return Point3D([self.x+other.x,self.y+other.y,self.z+other.z])
+    def sub(self,other):
+        return Point3D([self.x-other.x,self.y-other.y,self.z-other.z])
 
 class Line3D():
     def __init__(self,p1=None,p2=None):
@@ -183,6 +185,10 @@ class Line3D():
         return result
     def center(self):
         return self.p1.add(self.p2).scale(0.5)
+    def translate(self,p):
+        result = Line3D(self.p1.add(p),self.p2.add(p))
+        print("translate",result)
+        return result
         
 
 class Triangle3D():
