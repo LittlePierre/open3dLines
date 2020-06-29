@@ -117,6 +117,8 @@ class CADWindow(wx.Window):
 #                        wx.WXK_DOWN:
                        wx.WXK_CONTROL_Q:self.quit,
                        wx.WXK_CONTROL_R:self.refresh,
+                       "r":self.refresh,
+                       wx.WXK_CONTROL_A:self.selecAll,
                        wx.WXK_CONTROL_Z:self.undo,
                        wx.WXK_CONTROL_Y:self.redo,
                        wx.WXK_DELETE:self.deleteSelection,
@@ -126,6 +128,9 @@ class CADWindow(wx.Window):
             action = dictactions.get(chr(code),None)
         if action is not None :
             action(event)
+
+    def selecAll(self,event):
+        self.stateMachine.selectAll()
 
     def refresh(self,event=None):
         dc = wx.BufferedDC(None, self.buffer)

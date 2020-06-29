@@ -26,6 +26,8 @@ class GenericStateMachine():
         pass
     def notifyAddCmd(self,command):
         pass
+    def selectAll(self):
+        pass
 class LineStateMachine(GenericStateMachine):
     def __init__(self,cadWindow):
         GenericStateMachine.__init__(self,cadWindow)
@@ -151,6 +153,14 @@ class SelectStateMachine(GenericStateMachine):
         self.nextAction = self.leftReleased
     def leftReleased(self,x,y):
         self.nextAction = self.leftPressed
+    def selectAll(self):
+        self.idSelectedList = []
+        for ident,obj in self.model.elements3d.items() :
+            element3d = obj.get("element")
+            layer = obj.get("layer",None)
+            if layer.visible :
+                self.idSelectedList.append(ident)
+        self.cadWindow.refresh()
     def reiinit(self):
         self.__init__(self.cadWindow)
         
