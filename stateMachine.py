@@ -227,7 +227,8 @@ class TranslateStateMachine(GenericStateMachine):
 #         self.mouseactive = True
         self.idle = True
         self.lastMagneticPoint = None
-
+    def idle(self,*args,**kwargs):
+        pass
     def setActive(self):
         self.__init__(self.cadWindow)
         self.cadWindow.pnl.rightPanel.setCommandLabel(_("Enter first point"))
@@ -242,7 +243,7 @@ class TranslateStateMachine(GenericStateMachine):
     def notifyAdd3dPoint(self,point3d):
         point2d = self.cam.model2View(point3d)
         self.nextAction(point2d,point3d)
-#         self.nextAction(point2d,point3d)
+        self.nextAction(point2d,point3d)
     def notifyAddCmd(self,command):
         try :
             coords =command.split(",")
@@ -299,6 +300,7 @@ class TranslateStateMachine(GenericStateMachine):
     def reiinit(self):
 #         self.rightPanel = self.pnl.rightPanel
 #         self.rightPanel.setCommandLabel(_("Enter first Point"))
+        self.nextAction = self.idle
         self.cadWindow.setStateMachine(StateMachineList.selectStateMachine)
 #         else :
 #             self.__init__(self.cadWindow)
