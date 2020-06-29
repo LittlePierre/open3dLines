@@ -3,6 +3,7 @@ from cadwindow import CADWindow
 from rightPanel import RightPanel
 from leftPanel import LeftPanel
 from lowerPanel import LowerPanel
+from STLImporter import stlImporter
 class Panel(wx.Panel):
     def __init__(self, root):
         wx.Panel.__init__(self, root)#, style=wx.WANTS_CHARS)
@@ -32,6 +33,7 @@ class MainWindow(wx.Frame):
 #         menuOpen = filemenu.Append(wx.ID_OPEN, "&Open"," Open a file to edit")
 #         menuAbout= filemenu.Append(wx.ID_ABOUT, "&About"," Information about this program")
         menuExit = filemenu.Append(wx.ID_EXIT,"E&xit"," Terminate the program")
+        importStl = filemenu.Append(wx.ID_ANY,_("Import stl"))
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu,"&File") # Adding the "filemenu" to the MenuBar
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
@@ -41,6 +43,7 @@ class MainWindow(wx.Frame):
         self.Maximize(True)
 #         self.ShowFullScreen(True)
         self.Bind(wx.EVT_MENU, self.quit, menuExit)
+        self.Bind(wx.EVT_MENU,self.importSTL,importStl)
     def setFocus(self):
         self.panel.cadWindow.SetFocus()
 #         self.SetFocus()
@@ -49,7 +52,17 @@ class MainWindow(wx.Frame):
         print("mainquit")
         self.Close(True)
 
-
+    def importSTL(self,event):
+        print ("import STL")
+        dialog = wx.FileDialog(None,
+                               message="Import STL",
+                               wildcard="STL files (*.stl)|*.stl",
+                               style = wx.FD_OPEN)
+        if dialog.ShowModal() == wx.ID_CANCEL:
+            return
+        pathname = dialog.GetPath()
+        stl = stlImporter(pathname)
+        self.panel.cadWindow.model.addStl(stl)
 if __name__ == "__main__":
         app = wx.App(False)
         gui = MainWindow(None, "test")

@@ -202,6 +202,9 @@ class Triangle3D():
         self.dist = float("inf")
         self.visible = True
         self.points2D = []
+        self.lines = [Line3D(self.p1,self.p2),
+                      Line3D(self.p1,self.p3),
+                      Line3D(self.p2,self.p3)]
     def droite(self,Point1,Point2,Point3):
         [xa,ya] = [Point1.x,Point1.y]
         [xb,yb] = [Point2.x,Point2.y]

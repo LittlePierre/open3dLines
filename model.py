@@ -258,7 +258,11 @@ class Model(SingletonModel):
         pass
     def getAssociatedElement(self,element):
         pass
-
+    def addStl(self,stl):
+        for triangle in stl.triangles:
+            self.addElements(triangle.lines,
+                                 # layer, updateHistory
+                                 )
     def dummyInit(self):
         line = Line3D(Point3D([0,0,0]),Point3D([100,0,0]))
         self.addElements(line)
