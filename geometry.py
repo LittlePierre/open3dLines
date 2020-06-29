@@ -175,6 +175,14 @@ class Point3D():
         return Point3D([self.x+other.x,self.y+other.y,self.z+other.z])
     def sub(self,other):
         return Point3D([self.x-other.x,self.y-other.y,self.z-other.z])
+    def rotate(self,center,axis,angle):
+        p2 = self.sub(center)
+        origin = Point3D([0.,0.,0.])
+        toRotate = origin.Vect(p2)
+        rotatedVect =toRotate.rotate(axis.normalize(), angle)
+        rotatedPoint = Point3D([rotatedVect.x,rotatedVect.y,rotatedVect.z])
+        result = rotatedPoint.add(center)
+        return result
 
 class Line3D():
     def __init__(self,p1=None,p2=None):
@@ -187,7 +195,9 @@ class Line3D():
         return self.p1.add(self.p2).scale(0.5)
     def translate(self,p):
         result = Line3D(self.p1.add(p),self.p2.add(p))
-        print("translate",result)
+        return result
+    def rotate(self,center,axis,angle):
+        result = Line3D(self.p1.rotate(center,axis,angle),self.p2.rotate(center,axis,angle))
         return result
         
 

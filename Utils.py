@@ -26,6 +26,7 @@ class StateMachineList():
     parallelStateMachine = 1
     selectStateMachine =2
     translateStateMachine= 3
+    rotateStateMachine = 4
 
 class SingletonIdGenerator(object):
     __instance = None

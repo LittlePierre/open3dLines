@@ -236,12 +236,24 @@ class Model(SingletonModel):
             return [line3d,line2d]
     def getrectangleSelection(self,coininfGauche,coinSupDroit):
         pass
-    def RotateElement(self,element,axis,angle,nbcopies):
-        pass
+    def RotateSelection(self,selList,keep,nbrepeat,center,axis,alpha):
+        if nbrepeat == 1:
+            nbrepeat = 2
+        listToRotate = []
+        for identifier in selList : 
+            listToRotate.append(self.elements3d[identifier].get("element",None))
+        ListRotated = []
+        for element in listToRotate :
+            for nbrot in range(nbrepeat-1):
+                angle = alpha*(nbrot+1)
+                ListRotated.append(element.rotate(center,axis,angle))
+        self.addElements(ListRotated,layer=None, updateHistory=True)
+        if not keep :
+            self.delete(selList, updateHistory=True)
     def TranslateSelection(self,selList,translation,keep,nb):
         if nb ==1 :
             nb= 2
-        print ("translate Selection",selList,translation,keep,nb)
+#         print ("translate Selection",selList,translation,keep,nb)
         listToTranslate = []
         for identifier in selList : 
             listToTranslate.append(self.elements3d[identifier].get("element",None))

@@ -2,7 +2,7 @@ import wx
 from model import Model
 from Camera import Camera
 from stateMachine import LineStateMachine,SelectStateMachine,\
-    ParallelStateMachine,TranslateStateMachine
+    ParallelStateMachine,TranslateStateMachine, RotateStateMachine
 from geometry import Line3D,Vecteur,Point3D,Line2D
 from Utils import CADWindowStates,ColorClass,StateMachineList
 
@@ -294,6 +294,7 @@ class CADWindow(wx.Window):
                              StateMachineList.selectStateMachine : SelectStateMachine,
                              StateMachineList.parallelStateMachine : ParallelStateMachine,
                              StateMachineList.translateStateMachine : TranslateStateMachine,
+                             StateMachineList.rotateStateMachine : RotateStateMachine,
                              }
         stateMachineclass = dictStateMachines.get(statem,LineStateMachine)
         self.stateMachine.exit()
