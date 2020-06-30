@@ -28,6 +28,8 @@ class GenericStateMachine():
         pass
     def selectAll(self):
         pass
+    def invertSelection(self):
+        pass
 class LineStateMachine(GenericStateMachine):
     def __init__(self,cadWindow):
         GenericStateMachine.__init__(self,cadWindow)
@@ -160,6 +162,15 @@ class SelectStateMachine(GenericStateMachine):
             layer = obj.get("layer",None)
             if layer.visible :
                 self.idSelectedList.append(ident)
+        self.cadWindow.refresh()
+    def invertSelection(self):
+        newSelection = []
+        for ident,obj in self.model.elements3d.items() :
+            element3d = obj.get("element")
+            layer = obj.get("layer",None)
+            if layer.visible and not (ident  in self.idSelectedList):
+                newSelection.append(ident)
+        self.idSelectedList = newSelection
         self.cadWindow.refresh()
     def reiinit(self):
         self.__init__(self.cadWindow)

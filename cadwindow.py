@@ -138,6 +138,7 @@ class CADWindow(wx.Window):
                        wx.WXK_CONTROL_R:self.refresh,
                        "r":self.refresh,
                        wx.WXK_CONTROL_A:self.selecAll,
+                       wx.WXK_CONTROL_I:self.invertSelection,
                        wx.WXK_CONTROL_Z:self.undo,
                        wx.WXK_CONTROL_Y:self.redo,
                        wx.WXK_DELETE:self.deleteSelection,
@@ -152,7 +153,8 @@ class CADWindow(wx.Window):
         print("Ctrl")
     def selecAll(self,event):
         self.stateMachine.selectAll()
-
+    def invertSelection(self,event):
+        self.stateMachine.invertSelection()
     def refresh(self,event=None):
         dc = wx.BufferedDC(None, self.buffer)
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
