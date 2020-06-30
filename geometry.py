@@ -76,6 +76,8 @@ class Vecteur():
         return Vecteur([self.x-other.x,self.y-other.y,self.z-other.z])
     def __sub__(self,other):
         return Vecteur([self.x-other.x,self.y-other.y,self.z-other.z])
+    def __add__(self,other):
+        return self.addition(other)
     def divise(self,scale):
         return Vecteur([self.x/scale,self.y/scale,self.z/scale])
     def multiply(self,scale):

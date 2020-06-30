@@ -4,6 +4,8 @@ from rightPanel import RightPanel
 from leftPanel import LeftPanel
 from lowerPanel import LowerPanel
 from STLImporter import stlImporter
+
+
 class Panel(wx.Panel):
     def __init__(self, root):
         wx.Panel.__init__(self, root)#, style=wx.WANTS_CHARS)
@@ -21,7 +23,7 @@ class Panel(wx.Panel):
         self.mainSizer.Add(self.middleSizer, 1, wx.EXPAND)
         self.mainSizer.Add(self.lowerPanel.lowerSizer,0,wx.EXPAND)
         self.SetSizerAndFit(self.mainSizer)
-        
+
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title,size=(-1,-1))#, size=(self.windowx,self.windowy))
@@ -46,14 +48,13 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU,self.importSTL,importStl)
     def setFocus(self):
         self.panel.cadWindow.SetFocus()
-#         self.SetFocus()
+
     def quit(self,event):
         print (event)
         print("mainquit")
         self.Close(True)
 
     def importSTL(self,event):
-        print ("import STL")
         dialog = wx.FileDialog(None,
                                message="Import STL",
                                wildcard="STL files (*.stl)|*.stl",
@@ -63,10 +64,13 @@ class MainWindow(wx.Frame):
         pathname = dialog.GetPath()
         stl = stlImporter(pathname)
         self.panel.cadWindow.model.addStl(stl)
+
+
 if __name__ == "__main__":
         app = wx.App(False)
         gui = MainWindow(None, "test")
 #         import wx.lib.inspection
 #         wx.lib.inspection.InspectionTool().Show()
         app.MainLoop()
+
 

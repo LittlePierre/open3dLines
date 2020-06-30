@@ -26,6 +26,9 @@ class Camera(SingletonCamera):
     def setDepth(self,depth):
         print ("depth",depth)
         self.depth = depth
+    def getCamPos(self):
+        return Point3D([self.pos.x,self.pos.y,self.pos.z])
+
     def setCamPos(self,pos=Point3D):
         self.pos = pos
         self.Model2CamtranslationVector = Vecteur([self.pos.x,self.pos.y,self.pos.z])
@@ -48,19 +51,33 @@ class Camera(SingletonCamera):
                                    ])
 #         print("zzz",self.Matrixcam2View)
     def model2Cam(self, point3D):
+#         print ("model2Cam")
+#         print ("transVector",self.Model2CamtranslationVector)
         m=Matrix(point3D)
         rotated = self.rotationMatrixFromModel*m
         rotatedV = rotated.getcolumnAsVector()
-        translatedV = rotatedV.addition(self.Model2CamtranslationVector)
+        transvInCamView = self.rotationMatrixFromModel*self.Model2CamtranslationVector
+        transvInCamView = transvInCamView.getcolumnAsVector()
+        translatedV = rotatedV.addition(transvInCamView)
 #         return Point3D([translatedV.x,translatedV.y,translatedV.z])
         return Point3D([translatedV.x,translatedV.y,self.depth])
 
-    def cam2Model(self,point3D):
+    def cam2Model(self,point3D,pos=None):
+#         print ("poscam",pos)
+#         print ("Point3D clicked (cam view)",point3D)
+#         print ("rotation Matrix",self.rotationMatrixFromModel)
+        if pos is None :
+            pos = self.pos
         v = Vecteur([point3D.x,point3D.y,point3D.z])
-        untranslated = v-self.Model2CamtranslationVector
+        posInCam = self.rotationMatrixFromModel*Vecteur([pos.x,pos.y,pos.z])
+        posInCam =posInCam.getcolumnAsVector()
+#         print ("poscam InCam",posInCam)
+        untranslated = v-posInCam
+#         print ("untranslated",untranslated)
         unrotatedAsMatrix = self.rotationMatrixFromModel.invert()*untranslated
         unrotatedAsVecteur = unrotatedAsMatrix.getcolumnAsVector()
         result = Point3D([ unrotatedAsVecteur.x,unrotatedAsVecteur.y,unrotatedAsVecteur.z  ])
+#         print ("point clicked in Model",result)
         return result
 
     def cam2View(self,point3D):
@@ -85,9 +102,13 @@ class Camera(SingletonCamera):
         pcam = self.model2Cam(point3D)
         return self.cam2View(pcam)
 
-    def view2Model(self,point2D,depth=None):
+    def view2Model(self,point2D,depth=None,pos =None):
+        if pos is None :
+            pos=self.pos
         pcam = self.view2Cam(point2D, depth)
-        p = self.cam2Model(pcam)
+#         print ("pclicked cam",pcam)
+        p = self.cam2Model(pcam,pos=pos)
+#         print ("pclicked model",p)
         return p
 
     def setScaleAndOffset(self,scale=1.0,offsetx=None,offsety=None):

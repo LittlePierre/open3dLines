@@ -3,7 +3,7 @@ from model import Model
 from Camera import Camera
 from stateMachine import LineStateMachine,SelectStateMachine,\
     ParallelStateMachine,TranslateStateMachine, RotateStateMachine
-from geometry import Line3D,Vecteur,Point3D,Line2D
+from geometry import Line3D,Vecteur,Point3D,Line2D,Point2D
 from Utils import CADWindowStates,ColorClass,StateMachineList
 
 
@@ -41,6 +41,8 @@ class CADWindow(wx.Window):
         self.minx = 0
         self.miny =0
         self.middlepressed = False
+        self.ctrlPressed = False
+        self.translateView = False
         self.currentState = CADWindowStates.Idle
 
     def bindEvents(self):
@@ -54,7 +56,10 @@ class CADWindow(wx.Window):
         self.Bind(wx.EVT_MIDDLE_UP,                  self.middleclickrelease)
         self.Bind(wx.EVT_MOTION, self.motion)
         self.Bind(wx.EVT_MOUSEWHEEL, self.mouseWheel)
-        self.Bind(wx.EVT_CHAR,                    self.onKeyDown)
+        self.Bind(wx.EVT_CHAR,                    self.onChar)
+        self.Bind(wx.EVT_KEY_DOWN,              self.onKeyDown)
+        self.Bind(wx.EVT_KEY_UP,                self.onKeyUp)
+
     def initBuffer(self):
         ''' Initialize the bitmap used for buffering the display. '''
         self.size = self.GetSize()
@@ -98,8 +103,22 @@ class CADWindow(wx.Window):
         # here that's all there is to it.
         dc = wx.BufferedPaintDC(self, self.buffer)
 
-
     def onKeyDown(self,event):
+#         print ("key down")
+        code = event.GetKeyCode()
+#         print(code)
+        if code == 308:
+            self.ctrlPressed = True
+        event.Skip()
+    def onKeyUp(self,event):
+#         print ("key up")
+        code = event.GetKeyCode()
+#         print(code)
+        if code == 308:
+            self.ctrlPressed = False
+            self.translateView = False
+        event.Skip()
+    def onChar(self,event):
         print ("Event Char")
         code = event.GetKeyCode()
         print(code)
@@ -129,6 +148,8 @@ class CADWindow(wx.Window):
         if action is not None :
             action(event)
 
+    def onCtrl(self,event):
+        print("Ctrl")
     def selecAll(self,event):
         self.stateMachine.selectAll()
 
@@ -201,14 +222,25 @@ class CADWindow(wx.Window):
         dc.DrawLine(x1, y1, x2, y2)
 
     def leftclick(self,event):
-        self.stateMachine.notifyClick(event)
+        if self.ctrlPressed == False :
+            self.stateMachine.notifyClick(event)
+        else : 
+#             print ("ctrl Clk")
+            self.translateView = True
+            firsttranslatex,firsttranslatey = event.x,event.y
+#             print ("clicked on ",firsttranslatex,firsttranslatey)
+            self.initialpos = self.cam.view2Model(Point2D([firsttranslatex,firsttranslatey]))
+#             print ("intialPos",self.initialpos)
 #         self.stateMachine.leftClick(event)
 #         if self.stateMachine.getState()==3 :
 #             self.addline()
 
     def leftclickrelease(self,event):
-        print ('left release')
-        self.stateMachine.notifyClick(event)
+#         print ('left release')
+        if self.translateView == False :
+            self.stateMachine.notifyClick(event)
+        else :
+            self.translateView = False
 #         self.stateMachine.releaseLeftClick(event)
 # #         point1,point2 = self.stateMachine.lineStart,self.stateMachine.lineEnd
 #         self.refresh(event)
@@ -217,15 +249,19 @@ class CADWindow(wx.Window):
         if self.middlepressed:
             self.rotate(event)
             return
+        if self.translateView:
+#             print ("translate")
+            self.translate(event)
+            return
 #         elif self.stateMachine.mouseactive:
-        else :
-            self.stateMachine.notifyMoveMouse(event)
+        self.stateMachine.notifyMoveMouse(event)
 #         if self.stateMachine.getState()<= 2 and self.stateMachine.getState()>0:
 #             point1 = self.stateMachine.lineStart
 #             previouspos = self.stateMachine.previousPos
 #             self.drawLine(point1, previouspos, wx.Pen(wx.BLACK, 4))
 #             self.stateMachine.moveMouse(event)
 #             self.drawLine(point1,self.stateMachine.currentPos)
+
     def rotate(self,event):
         self.currentRotatex,self.currentRotatey = event.x,event.y
         x = self.currentRotatex-self.lastRotatex
@@ -244,6 +280,15 @@ class CADWindow(wx.Window):
         self.cam.setRotationMatrix()
         self.stateMachine.rotate()
         self.refresh(event)
+    def translate(self,event):
+        self.currenttranslatex,self.currenttranslatey = event.x,event.y
+        currentpos = self.cam.view2Model(Point2D([self.currenttranslatex,
+                                                  self.currenttranslatey]),
+                                         pos=self.initialpos)
+#         print ("current pos",currentpos)
+        self.cam.setCamPos(Point3D([currentpos.x,currentpos.y,currentpos.z]) )
+        self.refresh(event)
+#         self.cam.setScaleAndOffset(scale=None,offsetx=x,offsety=y)
     def middleclick(self,event):
         print ("middle click")
         self.lastRotatex,self.lastRotatey = event.x,event.y
@@ -305,5 +350,6 @@ class CADWindow(wx.Window):
         self.stateMachine.exit()
         self.stateMachine = stateMachineclass(self)
         self.stateMachine.setActive()
+
 
 

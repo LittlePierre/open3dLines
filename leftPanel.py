@@ -70,7 +70,7 @@ class LeftPanel():
 
 #     def OnClick(self,event):
 #         event.Skip()
-        
+    
     def onTextEnter(self,event):
         depth = event.GetString()
         try :
