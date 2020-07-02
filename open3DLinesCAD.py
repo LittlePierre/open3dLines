@@ -64,6 +64,7 @@ class MainWindow(wx.Frame):
         pathname = dialog.GetPath()
         stl = stlImporter(pathname)
         self.panel.cadWindow.model.addStl(stl)
+        self.panel.cadWindow.refresh(None)
 
 
 if __name__ == "__main__":

@@ -156,6 +156,8 @@ class CADWindow(wx.Window):
     def invertSelection(self,event):
         self.stateMachine.invertSelection()
     def refresh(self,event=None):
+        lines = []
+        pens = []
         dc = wx.BufferedDC(None, self.buffer)
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
@@ -171,13 +173,40 @@ class CADWindow(wx.Window):
             if isinstance(element, Line2D) and visible:
                 p1 = element.p1
                 p2 = element.p2
-                self.drawLine(p1, p2,ColorClass.fromElementLayer,layer = layer,width=width)
+                if p1 is not None and p2 is not None :
+                    x1,y1,x2,y2 = map(int,[p1.x,p1.y, p2.x,p2.y])
+                    lines.append([x1,y1,x2,y2])
+                    pens.append(self.getPenColor(layer, ColorClass.fromElementLayer, width))
+        self.drawLines(lines,pens)
+#                 self.drawLine(p1, p2,ColorClass.fromElementLayer,layer = layer,width=width)
+        lines = []
+        pens = []
         for ident in self.stateMachine.idSelectedList :
             element2d = self.model.elements2d[ident].get("element",None)
             if isinstance(element2d, Line2D):
-                self.drawLine(element2d.p1,element2d.p2,color = ColorClass.select)
+                p1 = element2d.p1
+                p2 = element2d.p2
+                if p1 is not None and p2 is not None :
+                    x1,y1,x2,y2 = map(int,[p1.x, p1.y, p2.x, p2.y])
+                    lines.append([x1,y1,x2,y2])
+                    pens.append(self.getPenColor(layer, color=ColorClass.select))
+#                 self.drawLine(element2d.p1,element2d.p2,color = ColorClass.select)
+        self.drawLines(lines,pens)
         self.Refresh(False)
         self.SetFocus()
+    def getPenColor(self,layer=None,color=ColorClass.default,width=1):
+        if layer is None :
+            layer = self.model.layers.getActiveLayer()
+        colordict = {
+                     ColorClass.default:wx.RED,
+                     ColorClass.fromActiveLayer:self.model.layers.getActiveLayer().color,
+                     ColorClass.erase:self.bgcolor,
+                     ColorClass.select:wx.Colour(128,128,128),
+                     ColorClass.fromElementLayer:layer.color
+                     }
+        pencolor = colordict.get(color,wx.RED)
+        return wx.Pen(pencolor,width=width)
+
     def frontView(self,event):
         self.cam.norm = Vecteur([0,0,1])
         self.cam.horiz = Vecteur([1,0,0])
@@ -205,6 +234,9 @@ class CADWindow(wx.Window):
         pass
     def rearView(self,event):
         pass
+    def drawLines(self,lines, pens):
+        dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
+        dc.DrawLineList(lines,pens)
     def drawLine(self,point1,point2,color=None,layer = None,width=1):
         if point1 is None or point2 is None :
             return
