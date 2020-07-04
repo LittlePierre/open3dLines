@@ -1,5 +1,29 @@
 from geometry import Vecteur,Point2D,Point3D,Matrix
+from ctypes import *
 
+class POINT3D(Structure):
+    _fields_ = [("x", c_double),
+        ("y", c_double),
+        ("z",c_double)]
+class Matrice3D(Structure):
+    _fields_= [("m11",c_double),
+               ("m12",c_double),
+               ("m13",c_double),
+               ("m21",c_double),
+               ("m22",c_double),
+               ("m23",c_double),
+               ("m31",c_double),
+               ("m32",c_double),
+               ("m33",c_double),
+        ]
+class Parameters2d(Structure):
+    _fields_ =[("scale",c_double),
+               ("offsetx",c_int),
+               ("offsety",c_int)]
+class Point2(Structure):
+    _fields_ = [("x",c_int),
+                ("y",c_int)
+                ]
 class SingletonCamera(object):
     __instance = None
     def __new__(cls,*args,**kwargs):
@@ -12,14 +36,30 @@ class Camera(SingletonCamera):
     def __init__(self,pos=Point3D(),norm=Vecteur([0,0,1])):
         SingletonCamera.__init__(self)
         if not hasattr(self, "initialized"):
+            try :
+                self.library = cdll.LoadLibrary("./lib/libopen3dLinesLib.so")
+                self.library.fastModel2View.argtypes = [POINT3D,Matrice3D,POINT3D,Parameters2d]
+                self.library.fastModel2View.restype = Point2
+                self.libraryloaded = True
+                print ("libopen3dLinesLib.so loaded")
+            except :
+                self.libraryloaded = False
+                self.library = None
+                print ("try to build lib to get faster")
             self.initialized = True
+            self.libraryloaded = False
+            self.library = None
+            self.ctypeModel2CamtranslationVector= POINT3D()
             self.pos = pos
-            self.Model2CamtranslationVector = Vecteur([self.pos.x,self.pos.y,self.pos.z])
+            self.setCamPos(pos)
+#             self.Model2CamtranslationVector = Vecteur([self.pos.x,self.pos.y,self.pos.z])
             self.depth = 0.0
             self.scale = 1.0
             self.norm = norm.normalize()
             self.horiz = Vecteur([1,0,0])
             self.vert = Vecteur([0,1,0])
+            self.ctypesRotationMatrixFromModel = Matrice3D()
+            self.ctypesParameters2D = Parameters2d()
             self.setRotationMatrix()
             self.setMatrixCam2View()
 
@@ -32,9 +72,13 @@ class Camera(SingletonCamera):
     def setCamPos(self,pos=Point3D):
         self.pos = pos
         self.Model2CamtranslationVector = Vecteur([self.pos.x,self.pos.y,self.pos.z])
-
+        self.ctypeModel2CamtranslationVector.x = pos.x
+        self.ctypeModel2CamtranslationVector.y = pos.y
+        self.ctypeModel2CamtranslationVector.z = pos.z
     def setCamOffsetVector(self):
         self.camOffsetVector = Vecteur([self.offsetx,self.offsety,0.0])
+        self.ctypesParameters2D.offsetx =self.offsetx
+        self.ctypesParameters2D.offsety = self.offsety
 
     def setRotationMatrix(self):
         normCol = Matrix(self.norm)
@@ -42,6 +86,15 @@ class Camera(SingletonCamera):
         vertCol = Matrix(self.vert)
         m = horizCol.augmente(vertCol)
         self.rotationMatrixFromModel = m.augmente(normCol)
+        self.ctypesRotationMatrixFromModel.m11 = self.rotationMatrixFromModel.M[0][0]
+        self.ctypesRotationMatrixFromModel.m12 = self.rotationMatrixFromModel.M[0][1]
+        self.ctypesRotationMatrixFromModel.m13 = self.rotationMatrixFromModel.M[0][2]
+        self.ctypesRotationMatrixFromModel.m21 = self.rotationMatrixFromModel.M[1][0]
+        self.ctypesRotationMatrixFromModel.m22 = self.rotationMatrixFromModel.M[1][1]
+        self.ctypesRotationMatrixFromModel.m23 = self.rotationMatrixFromModel.M[1][2]
+        self.ctypesRotationMatrixFromModel.m31 = self.rotationMatrixFromModel.M[2][0]
+        self.ctypesRotationMatrixFromModel.m32 = self.rotationMatrixFromModel.M[2][1]
+        self.ctypesRotationMatrixFromModel.m33 = self.rotationMatrixFromModel.M[2][2]
 #         return self.rotationMatrixFromModel
 
     def setMatrixCam2View(self):
@@ -49,6 +102,7 @@ class Camera(SingletonCamera):
                                       [self.scale,0.],
                                       [0.,-self.scale]
                                    ])
+        self.ctypesParameters2D.scale = self.scale
 #         print("zzz",self.Matrixcam2View)
     def model2Cam(self, point3D):
 #         print ("model2Cam")
@@ -61,6 +115,13 @@ class Camera(SingletonCamera):
         translatedV = rotatedV.addition(transvInCamView)
 #         return Point3D([translatedV.x,translatedV.y,translatedV.z])
         return Point3D([translatedV.x,translatedV.y,self.depth])
+
+    def cam2View(self,point3D):
+        p2dCam = Matrix([[point3D.x],[point3D.y]])
+        p2viewscaled = self.Matrixcam2View*p2dCam
+        x= p2viewscaled.M[0][0]+self.offsetx
+        y= p2viewscaled.M[1][0]+self.offsety
+        return Point2D([x,y])
 
     def cam2Model(self,point3D,pos=None):
 #         print ("poscam",pos)
@@ -80,13 +141,6 @@ class Camera(SingletonCamera):
 #         print ("point clicked in Model",result)
         return result
 
-    def cam2View(self,point3D):
-        p2dCam = Matrix([[point3D.x],[point3D.y]])
-        p2viewscaled = self.Matrixcam2View*p2dCam
-        x= p2viewscaled.M[0][0]+self.offsetx
-        y= p2viewscaled.M[1][0]+self.offsety
-        return Point2D([x,y])
-
     def view2Cam(self,point2D,depth = None):
         if depth is None :
             depth = self.depth
@@ -99,8 +153,20 @@ class Camera(SingletonCamera):
         return p3dCam
 
     def model2View(self,point3D):
-        pcam = self.model2Cam(point3D)
-        return self.cam2View(pcam)
+        if self.libraryloaded:
+            point =POINT3D()
+            point.x = point3D.x
+            point.y = point3D.y
+            point.z = point3D.z
+
+            p2d  = self.library.fastModel2View(point,
+                                                  self.ctypesRotationMatrixFromModel,
+                                                  self.ctypeModel2CamtranslationVector,
+                                                  self.ctypesParameters2D)
+            return Point2D([p2d.x,p2d.y])
+        else :
+            pcam = self.model2Cam(point3D)
+            return self.cam2View(pcam)
 
     def view2Model(self,point2D,depth=None,pos =None):
         if pos is None :

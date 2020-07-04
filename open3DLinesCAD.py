@@ -62,9 +62,15 @@ class MainWindow(wx.Frame):
         if dialog.ShowModal() == wx.ID_CANCEL:
             return
         pathname = dialog.GetPath()
+#         import time
+#         t0 =time.time()
         stl = stlImporter(pathname)
+#         t1 = time.time()
         self.panel.cadWindow.model.addStl(stl)
+#         t2 = time.time()
         self.panel.cadWindow.refresh(None)
+#         t3 = time.time()
+#         print (t3-t2)
 
 
 if __name__ == "__main__":

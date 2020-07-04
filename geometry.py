@@ -423,10 +423,10 @@ class Matrix():
         return self*VColumn
      
     def __mul__(self,multiplicand):
-        if isinstance (multiplicand,float) or isinstance(multiplicand,int):
-            return self.scalarmult(multiplicand)
         if isinstance(multiplicand,Matrix):
             return self.matricemult(multiplicand)
+        if isinstance (multiplicand,float) or isinstance(multiplicand,int):
+            return self.scalarmult(multiplicand)
         if isinstance(multiplicand,Vecteur):
             return self.vectmult(multiplicand)
     def __add__(self,other):
