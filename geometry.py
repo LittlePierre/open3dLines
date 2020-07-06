@@ -1,6 +1,4 @@
 import math
-# from pygame.tests.freetype_tags import exclude
-# from code import interact
 
 class Slice():
     def __init__(self,polygon):
@@ -202,6 +200,33 @@ class Line3D():
         result = Line3D(self.p1.rotate(center,axis,angle),self.p2.rotate(center,axis,angle))
         return result
         
+class EllipticArc3d():
+    def __init__(self,center,xaxis,yaxis,startangle,endangle):
+        self.center = center
+        self.xaxis,self.yaxis= xaxis,yaxis
+        self.startangle,self.endangle = startangle,endangle
+        self.i = Vecteur([self.xaxis.x-self.center.x,
+                          self.xaxis.y-self.center.y,
+                          self.xaxus.z-self.center.z]).normalize()
+        self.n = self.i.ProduitVectoriel(Vecteur([self.yaxis.x-self.center.x,
+                                                  self.yaxis.y-self.center.y,
+                                                  self.yaxis.z-self.center.z
+            ])).normalize()
+        self.j = self.n.ProduitVectoriel(self.i).normalize()
+        vecalphastart = Vecteur([self.startangle.x-self.center.x,
+                                 self.startangle.y-self.center.y,
+                                 self.startangle.z-self.center.z])
+        vecalphaend = Vecteur([self.endangle.x-self.center.x,
+                                 self.endangle.y-self.center.y,
+                                 self.endangle.z-self.center.z])
+        cosalphastart = vecalphastart.ProduitScalaire(self.i)
+        sinalphastart = vecalphastart.ProduitScalaire(self.j)
+        cosalphaend = vecalphaend.ProduitScalaire(self.i)
+        sinalphaend = vecalphaend.ProduitScalaire(self.j)
+        self.alphastart = ((math.atan2(sinalphastart,cosalphastart)*180./math.pi)+360.)%360
+        self.alphaend = ((math.atan2(sinalphaend,cosalphaend)*180./math.pi)+360.)%360
+        if self.alphaend<= self.alphastart:
+            self.alphaend +=360.
 
 class Triangle3D():
     def __init__(self,Point1,Point2,Point3,Normale):

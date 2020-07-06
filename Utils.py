@@ -5,13 +5,13 @@ import gettext
 __builtin__._ = gettext.translation('Lines3DCAD', localedir="./locale/",fallback=True,languages=["fr"]).gettext
 # __builtin__._ = gettext.translation('bCNC', os.path.join(prgpath,'locale'),
 #                     fallback=True, languages=["fr"]).gettext
-class CADWindowStates():
-    Idle = 0
-    Select = 1
-    drawLine = 2
-    drawArc = 3
-    Move =4
-    Rotate = 5
+# class CADWindowStates():
+#     Idle = 0
+#     Select = 1
+#     drawLine = 2
+#     drawArc = 3
+#     Move =4
+#     Rotate = 5
 
 
 class ColorClass():
@@ -27,6 +27,9 @@ class StateMachineList():
     selectStateMachine =2
     translateStateMachine= 3
     rotateStateMachine = 4
+    circleStateMachine = 5
+    ArcStateMachine = 6
+    ellipticArc = 7
 
 class SingletonIdGenerator(object):
     __instance = None

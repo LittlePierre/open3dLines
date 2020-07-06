@@ -4,7 +4,7 @@ from Camera import Camera
 from stateMachine import LineStateMachine,SelectStateMachine,\
     ParallelStateMachine,TranslateStateMachine, RotateStateMachine
 from geometry import Line3D,Vecteur,Point3D,Line2D,Point2D
-from Utils import CADWindowStates,ColorClass,StateMachineList
+from Utils import ColorClass,StateMachineList#,CADWindowStates,
 
 
 class CADWindow(wx.Window):
@@ -43,7 +43,7 @@ class CADWindow(wx.Window):
         self.middlepressed = False
         self.ctrlPressed = False
         self.translateView = False
-        self.currentState = CADWindowStates.Idle
+#         self.currentState = CADWindowStates.Idle
 
     def bindEvents(self):
         self.Bind(wx.EVT_PAINT, self.onPaint)
