@@ -37,11 +37,15 @@ class Camera(SingletonCamera):
         SingletonCamera.__init__(self)
         if not hasattr(self, "initialized"):
             try :
-                self.library = cdll.LoadLibrary("./lib/libopen3dLinesLib.so")
+                import platform
+                if platform.system() == "Windows" :
+                    self.library = cdll.LoadLibrary("./libs/libopen3dLinesLib.dll")
+                else :
+                    self.library = cdll.LoadLibrary("./libs/libopen3dLinesLib.so")
                 self.library.fastModel2View.argtypes = [POINT3D,Matrice3D,POINT3D,Parameters2d]
                 self.library.fastModel2View.restype = Point2
                 self.libraryloaded = True
-                print ("libopen3dLinesLib.so loaded")
+                print ("libopen3dLinesLib loaded")
             except :
                 self.libraryloaded = False
                 self.library = None
