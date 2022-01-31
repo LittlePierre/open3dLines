@@ -1,4 +1,4 @@
-from geometry import Point3D,Line3D,Line2D,Vecteur,Point2D
+from geometry import Point3D,Line3D,Line2D,Vecteur,Point2D,Circle3D
 from Utils import IdGenerator
 from Camera import Camera
 from Layer import Layers,Layer
@@ -274,7 +274,7 @@ class Model(SingletonModel):
 
     def addStl(self,stl):
         for triangle in stl.triangles:
-            self.addElements(triangle.lines,
+            self.addElements(triangle.lines3d,
                                  # layer, updateHistory
                                  )
 
@@ -296,7 +296,6 @@ class Model(SingletonModel):
         self.addElements(line)
         line = Line3D(Point3D([100,0,100]),Point3D([100,100,100]))
         self.addElements(line)
-         
         line = Line3D(Point3D([0,0,0]),Point3D([0,0,100]))
         self.addElements(line)
         line = Line3D(Point3D([100,0,0]),Point3D([100,0,100]))
@@ -307,6 +306,12 @@ class Model(SingletonModel):
         self.addElements(line)
         line = Line3D(Point3D([0,0,0]),Point3D([100,100,100]))
         self.addElements(line)
+#         circle = Circle3D(centerP3D = Point3D([50,50,0]),Radiusp3D = Point3D([50,0,0]))
+#         self.addElements(circle)
+        circle = Circle3D(centerP3D = Point3D([50,0,50]),
+                           radiusvalue=50,
+                           normale = Vecteur([0,0,1]))
+        self.addElements(circle)
     
     def photogramInit(self):
         Rt2=  [[-0.22232591,0.26331397,-0.93874221,0.74086751],

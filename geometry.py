@@ -1,4 +1,5 @@
 import math
+import Utils
 
 class Slice():
     def __init__(self,polygon):
@@ -123,6 +124,7 @@ class Line2D():
     def __init__(self,p1=None,p2=None):
         self.p1 = p1 if p1 is not None and isinstance(p1, Point2D) else Point2D()
         self.p2 = p2 if p2 is not None and isinstance(p2,Point2D) else Point2D()
+        self.lines2d = [self]
     def __str__(self):
         result = "Line2D : %s %s"%(self.p1,self.p2)
         return result
@@ -173,6 +175,8 @@ class Point3D():
         return Point3D([self.x*scale,self.y*scale,self.z*scale])
     def add(self,other):
         return Point3D([self.x+other.x,self.y+other.y,self.z+other.z])
+    def addVect(self,vect):
+        return Point3D([self.x+vect.x,self.y+vect.y,self.z+vect.z])
     def sub(self,other):
         return Point3D([self.x-other.x,self.y-other.y,self.z-other.z])
     def rotate(self,center,axis,angle):
@@ -188,6 +192,7 @@ class Line3D():
     def __init__(self,p1=None,p2=None):
         self.p1 = p1 if p1 is not None and isinstance(p1, Point3D) else Point3D()
         self.p2 = p2 if p2 is not None and isinstance(p2,Point3D) else Point3D()
+        self.lines3d = [self]
     def __str__(self):
         result = "Line3D : %s %s"%(self.p1,self.p2)
         return result
@@ -227,7 +232,33 @@ class EllipticArc3d():
         self.alphaend = ((math.atan2(sinalphaend,cosalphaend)*180./math.pi)+360.)%360
         if self.alphaend<= self.alphastart:
             self.alphaend +=360.
-
+class Circle3D():
+    def __init__(self,centerP3D=None,Radiusp3D=None,radiusvalue=None,normale=None):
+        self.lines3d = []
+        self.linself.centerP3D = centerP3D
+        self.radiusvalue = radiusvalue
+        self.normale = normale.normalize()
+        self.horiz = [1,0,0]
+        self.vert = self.normale.ProduitVectoriel(self.horiz)
+        if self.vert.module() > 0:
+            self.vert = self.vert.normalize()
+        else : 
+            self.horiz = [0,1,0]
+            self.vert = self.normale.ProduitVectoriel(self.horiz)
+            self.vert = self.vert.normalize()
+        self.add3dlines()
+    def add3dlines(self):
+        nbseg = Utils.circleinterpolation
+        step = 360./nbseg
+        alpha = 0.
+        lastp = self.centerP3D.addVect(self.horiz.multiply(self.radiusvalue))
+        for index in range(nbseg):
+            alpha +=step
+            x = self.horiz.multiply(math.cos(alpha)).multiply(self.radiusvalue)
+            y = self.vert.mult(math.sin(alpha)).multiply(self.radiusvalue)
+            p = self.centerP3D.addVect(x).addVect(y)
+            self.lines3d.append(Line3D(lastp,p))
+            lastp = p
 class Triangle3D():
     def __init__(self,Point1,Point2,Point3,Normale):
         self.p1 = Point1
@@ -239,7 +270,7 @@ class Triangle3D():
         self.dist = float("inf")
         self.visible = True
         self.points2D = []
-        self.lines = [Line3D(self.p1,self.p2),
+        self.lines3d = [Line3D(self.p1,self.p2),
                       Line3D(self.p1,self.p3),
                       Line3D(self.p2,self.p3)]
     def droite(self,Point1,Point2,Point3):
