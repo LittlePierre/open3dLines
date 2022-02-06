@@ -67,6 +67,7 @@ class MainWindow(wx.Frame):
         stl = stlImporter(pathname)
 #         t1 = time.time()
         self.panel.cadWindow.model.addStl(stl)
+        self.panel.cadWindow.fit2Win()
 #         t2 = time.time()
         self.panel.cadWindow.refresh(None)
 #         t3 = time.time()

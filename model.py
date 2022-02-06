@@ -74,6 +74,20 @@ class Model(SingletonModel):
             self.layers = Layers()
 #             self.dummyInit()
 #             self.photogramInit()
+    def getMaxs(self):
+        inf =float("inf")
+        maxx = maxy =maxz=-inf
+        minx = miny = minz = inf
+        for key,value in self.elements3d.items():
+            elt3d = value.get("element")
+            maxx=max(maxx,elt3d.maxx)
+            maxy=max(maxy,elt3d.maxy)
+            maxz=max(maxz,elt3d.maxz)
+            minx=min(minx,elt3d.minx)
+            miny=min(miny,elt3d.miny)
+            minz=min(minz,elt3d.minz)
+        return [maxx,maxy,maxz,minx,miny,minz]
+            
     def addElements(self,elements,layer=None,updateHistory = True):
         actionCode = ADD_ACTIONS
         if not isinstance(elements, list):

@@ -116,15 +116,18 @@ class LeftPanel():
 #         self.popupAddArcCtrl.AddItem(_("Add 3d Elliptic Arc"))
         
         self.buttonTranslate = wx.Button(pnl,label=_("Translate selected"),size=(-1,-1))
+        self.buttonFit = wx.Button(pnl,label=_("Fit To Window"),size=(-1,-1))
 #         self.buttonRotate = wx.Button(pnl,label=_("Rotate selected"),size=(-1,-1))
         self.buttonsSizer.Add(self.depthlabel, 0, wx.EXPAND)
         self.buttonsSizer.Add(self.depthcontrol, 0, wx.EXPAND)
         self.buttonsSizer.Add(self.lineComboCtrl,0,wx.EXPAND)
 #         self.buttonsSizer.Add(self.ArcComboCtrl,0,wx.EXPAND)
         self.buttonsSizer.Add(self.buttonTranslate,0,wx.EXPAND)
+        self.buttonsSizer.Add(self.buttonFit,0,wx.EXPAND)
 #         self.buttonsSizer.Add(self.buttonRotate,0,wx.EXPAND)
         self.depthcontrol.Bind(wx.EVT_TEXT_ENTER, self.onTextEnter,self.depthcontrol)
         self.buttonTranslate.Bind(wx.EVT_BUTTON,self.onTranslateSelection)
+        self.buttonFit.Bind(wx.EVT_BUTTON,self.onFitToWindow)
 #         self.buttonRotate.Bind(wx.EVT_BUTTON,self.onRotateSelection)
 #         self.buttonDrawline.Bind(wx.EVT_BUTTON,self.onDrawline,self.buttonDrawline)
 #         self.SetSizerAndFit(self.buttonsSizer)
@@ -148,6 +151,8 @@ class LeftPanel():
         self.selectionList = self.pnl.cadWindow.stateMachine.idSelectedList
         if len(self.selectionList)>0:
             self.pnl.cadWindow.setStateMachine(StateMachineList.translateStateMachine)
+    def onFitToWindow(self,event):
+        self.pnl.cadWindow.fit2Win()
     def notifyTranslate(self,translation):
         self.dialog = wx.Dialog(self.root,title=_("Translate"))
         dialog = self.dialog

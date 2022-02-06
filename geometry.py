@@ -193,6 +193,7 @@ class Line3D():
         self.p1 = p1 if p1 is not None and isinstance(p1, Point3D) else Point3D()
         self.p2 = p2 if p2 is not None and isinstance(p2,Point3D) else Point3D()
         self.lines3d = [self]
+        self.calcbbox()
     def __str__(self):
         result = "Line3D : %s %s"%(self.p1,self.p2)
         return result
@@ -204,6 +205,13 @@ class Line3D():
     def rotate(self,center,axis,angle):
         result = Line3D(self.p1.rotate(center,axis,angle),self.p2.rotate(center,axis,angle))
         return result
+    def calcbbox(self):
+        self.minx = min(self.p1.x, self.p2.x)
+        self.miny = min(self.p1.y, self.p2.y)
+        self.minz = min(self.p1.z, self.p2.z)
+        self.maxx = max(self.p1.x, self.p2.x)
+        self.maxy = max(self.p1.y, self.p2.y)
+        self.maxz = max(self.p1.z, self.p2.z)
         
 class EllipticArc3d():
     def __init__(self,center,xaxis,yaxis,startangle,endangle):

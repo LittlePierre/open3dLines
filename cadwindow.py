@@ -6,6 +6,7 @@ from stateMachine import LineStateMachine,SelectStateMachine,\
     CircleStateMachine
 from geometry import Line3D,Vecteur,Point3D,Line2D,Point2D
 from Utils import ColorClass,StateMachineList#,CADWindowStates,
+from numpy.core.defchararray import center
 
 
 class CADWindow(wx.Window):
@@ -133,6 +134,12 @@ class CADWindow(wx.Window):
                        wx.WXK_HOME:self.frontView,
                        wx.WXK_NUMPAD5:self.frontView,
                        "5":self.frontView,
+                       wx.WXK_UP:self.downView,
+                       wx.WXK_NUMPAD8:self.downView,
+                       "8":self.downView,
+                       wx.WXK_DOWN:self.upView,
+                       wx.WXK_NUMPAD2:self.upView,
+                       "2":self.upView,
 #                        wx.WXK_UP:
 #                        wx.WXK_DOWN:
                        wx.WXK_CONTROL_Q:self.quit,
@@ -230,9 +237,19 @@ class CADWindow(wx.Window):
         self.stateMachine.rotate()
         self.refresh(event)
     def downView(self,event):
-        pass
+        self.cam.norm = Vecteur([0,1,0])
+        self.cam.horiz = Vecteur([1,0,0])
+        self.cam.vert = Vecteur([0,0,1])
+        self.cam.setRotationMatrix()
+        self.stateMachine.rotate()
+        self.refresh(event)
     def upView(self,event):
-        pass
+        self.cam.norm = Vecteur([0,-1,0])
+        self.cam.horiz = Vecteur([1,0,0])
+        self.cam.vert = Vecteur([0,0,-1])
+        self.cam.setRotationMatrix()
+        self.stateMachine.rotate()
+        self.refresh(event)
     def rearView(self,event):
         pass
     def drawLines(self,lines, pens):
@@ -344,15 +361,31 @@ class CADWindow(wx.Window):
             self.pluszoom(event)
         else :
             self.minuszoom(event)
+    def fit2Win(self):
+        [maxx,maxy,maxz,minx,miny,minz]=self.model.getMaxs()
+        pmin = Point3D([minx,miny,minz])
+        pmax = Point3D([maxx,maxy,maxz])
+        pmin2d = self.cam.model2View(pmin)
+        pmax2d =self.cam.model2View(pmax)
+        scale = max(abs(pmax2d.x - pmin2d.x )/ self.size[0],abs(pmax2d.y- pmin2d.y)/self.size[1])
+        offsetx=(pmax2d.x + pmin2d.x )/2.-self.size[0]/2.
+        offsety =(pmax2d.y+pmin2d.y/2.)-self.size[1]/2.
+        self.cam.setScaleAndOffset(scale=1./scale*self.cam.scale,offsetx=int(self.cam.offsetx-offsetx),offsety=int(self.cam.offsety-offsety))
+        self.cam.setRotationMatrix()
+        self.stateMachine.rotate()
+        self.refresh()
+#         print([maxx,maxy,maxz,minx,miny,minz])
     def pluszoom(self,event):
+        x,y = event.x,event.y
 #         self.cam.scale *=1.1
-        self.cam.setScaleAndOffset(scale=self.cam.scale*1.1)
+        self.cam.setScaleAndOffset(scale=self.cam.scale*1.1,offsetx=x,offsety=y)
         self.cam.setRotationMatrix()
         self.stateMachine.rotate()
         self.refresh(event)
     def minuszoom(self,event):
+        x,y = event.x,event.y
 #         self.cam.scale /=1.1
-        self.cam.setScaleAndOffset(scale=self.cam.scale/1.1)
+        self.cam.setScaleAndOffset(scale=self.cam.scale/1.1,offsetx=x,offsety=y)
         self.cam.setRotationMatrix()
         self.stateMachine.rotate()
         self.refresh(event)
