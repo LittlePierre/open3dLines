@@ -1,8 +1,11 @@
 import builtins as __builtin__
 import gettext
-
+from configure import *
+language = getStr("Language","lang")
+circleinterpolation = getInt("Geometry","circleinterpolation")
+print (language,circleinterpolation)
 # __builtin__._ = gettext.translation('Lines3DCAD', None, fallback=True).gettext
-__builtin__._ = gettext.translation('Lines3DCAD', localedir="./locale/",fallback=True,languages=["fr"]).gettext
+__builtin__._ = gettext.translation('Lines3DCAD', localedir="./locale/",fallback=True,languages=[language]).gettext
 # __builtin__._ = gettext.translation('bCNC', os.path.join(prgpath,'locale'),
 #                     fallback=True, languages=["fr"]).gettext
 # class CADWindowStates():
@@ -12,7 +15,8 @@ __builtin__._ = gettext.translation('Lines3DCAD', localedir="./locale/",fallback
 #     drawArc = 3
 #     Move =4
 #     Rotate = 5
-
+def to_zip(*args, **kwargs):
+    return list(zip(*args, **kwargs))
 
 class ColorClass():
     default = 0

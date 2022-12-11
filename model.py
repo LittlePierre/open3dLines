@@ -1,9 +1,11 @@
-from geometry import Point3D,Line3D,Line2D,Vecteur,Point2D,Circle3D
-from Utils import IdGenerator
+from geometry import Point3D,Line3D,Line2D,Vecteur,Point2D,Spline3D,\
+    Polyligne2D,Arc3D
+from Utils import IdGenerator,to_zip
 from Camera import Camera
 from Layer import Layers,Layer
 from magnetism import Magnetism
 import math
+from dxf import DXF
 DELETE_ACTIONS = 1
 ADD_ACTIONS = 2
 
@@ -149,6 +151,18 @@ class Model(SingletonModel):
     def projetToView(self,element):#,layer=None):
 #         if layer is None :
 #             layer = self.layers.getActiveLayer()
+        if isinstance(element,Spline3D) or isinstance(element,Arc3D):
+            xyz  = element.getPolyline()
+            xs = xyz[0]
+            ys = xyz[1]
+            ps = []
+            for index in range(len(xs)-1):
+                p1 = Point3D([xs[index],ys[index],0])
+                p2 = Point3D([xs[index+1],ys[index+1],0])
+                p1View = self.cam.model2View(p1)
+                p2View = self.cam.model2View(p2)
+                ps.append([p1View,p2View])
+            return Polyligne2D(ps)
         if isinstance(element, Line3D) :
             p1 = element.p1
             p2 = element.p2
@@ -291,7 +305,67 @@ class Model(SingletonModel):
             self.addElements(triangle.lines3d,
                                  # layer, updateHistory
                                  )
+    def addDxf(self,dxf,pathname):
+        print("DXF.....")
+        try:
+            dxf = DXF(pathname, "r")
+        except Exception:
+            return False
+        dxf.readFile()
+        dxf.close()
 
+        # prepare dxf file
+#         dxf.sort()
+#         dxf.convert2Polylines()
+#         dxf.expandBlocks()
+
+        for name, layer in dxf.layers.items():
+            enable = not bool(layer.isFrozen())
+            entities = dxf.entities(name)
+            self.fromDxf(dxf, entities)
+
+    def fromDxf(self, dxf, layer, units=0):
+        for entity in layer:
+            self.color = entity.color()
+            if entity.type == "SPLINE":
+                spline = Spline3D(entity)
+#                 spline.calcbbox()
+                self.addElements(spline)
+            elif entity.type == "LINE":
+                A = entity.start()
+                B = entity.end()
+                line = Line3D(Point3D([A[0],A[1],0]),Point3D([B[0],B[1],0]))
+                self.addElements(line)
+
+            elif entity.type == "CIRCLE" or entity.type == "ARC":
+                arc  = Arc3D(entity)
+                self.addElements(arc)
+#                 print(entity.type)
+                pass
+#                 center = dxf.convert(entity.center(), units)
+#                 self.append(Segment(Segment.CCW, A, B, center))
+#                 t = Segment.CW if entity._invert else Segment.CCW
+#                 center = dxf.convert(entity.center(), units)
+#                 self.append(Segment(t, A, B, center))
+
+#             elif entity.type in ("POLYLINE", "LWPOLYLINE", "SPLINE"):
+#                 # split it into multiple line segments
+#                 print (entity.type)
+# #                 xyzlist = entity.convert2Polyline2(dxf.splineSegs)
+# #                     dxf.convert(entity[10], units),
+# #                     dxf.convert(entity[20], units))
+# #             A = dxf.convert(entity.start(), units)
+# #             B = dxf.convert(entity.end(), units)
+# #                 if not eq(A, B):
+# 
+#                 for index in range(len(xyzlist)-1):
+#                     Ax = xyzlist[index][0]
+#                     Ay = xyzlist[index][1]
+#                     Bx = xyzlist[index+1][0]
+#                     By = xyzlist[index+1][1]
+#                     line = Line3D(Point3D([Ax,Ay,0]),Point3D([Bx,By,0]))
+#                     self.addElements(line)
+        
     def dummyInit(self):
         line = Line3D(Point3D([0,0,0]),Point3D([100,0,0]))
         self.addElements(line)

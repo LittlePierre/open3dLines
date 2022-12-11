@@ -4,7 +4,7 @@ from Camera import Camera
 from stateMachine import LineStateMachine,SelectStateMachine,\
     ParallelStateMachine,TranslateStateMachine, RotateStateMachine,\
     CircleStateMachine
-from geometry import Line3D,Vecteur,Point3D,Line2D,Point2D
+from geometry import Line3D,Vecteur,Point3D,Line2D,Polyligne2D
 from Utils import ColorClass,StateMachineList#,CADWindowStates,
 from numpy.core.defchararray import center
 
@@ -178,6 +178,14 @@ class CADWindow(wx.Window):
             layer = obj.get("layer",self.model.layers.getActiveLayer())
             width = layer.width
             visible = layer.visible
+            if isinstance(element,Polyligne2D) and visible:
+                for ligne in element.lines2d :
+                    p1 = ligne.p1
+                    p2 = ligne.p2
+                    if p1 is not None and p2 is not None :
+                        x1,y1,x2,y2 = map(int,[p1.x,p1.y, p2.x,p2.y])
+                        lines.append([x1,y1,x2,y2])
+                        pens.append(self.getPenColor(layer, ColorClass.fromElementLayer, width))
             if isinstance(element, Line2D) and visible:
                 p1 = element.p1
                 p2 = element.p2
@@ -198,6 +206,15 @@ class CADWindow(wx.Window):
                     x1,y1,x2,y2 = map(int,[p1.x, p1.y, p2.x, p2.y])
                     lines.append([x1,y1,x2,y2])
                     pens.append(self.getPenColor(layer, color=ColorClass.select))
+            elif isinstance(element2d,Polyligne2D) :
+                print("poly")
+                for ligne in element2d.lines2d :
+                    p1 = ligne.p1
+                    p2 = ligne.p2
+                    if p1 is not None and p2 is not None :
+                        x1,y1,x2,y2 = map(int,[p1.x,p1.y, p2.x,p2.y])
+                        lines.append([x1,y1,x2,y2])
+                        pens.append(self.getPenColor(layer, color=ColorClass.select))
 #                 self.drawLine(element2d.p1,element2d.p2,color = ColorClass.select)
         self.drawLines(lines,pens)
         self.Refresh(False)

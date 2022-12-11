@@ -1,5 +1,8 @@
 import math
 import Utils
+from Utils import to_zip
+from dxf import Entity
+import spline
 
 class Slice():
     def __init__(self,polygon):
@@ -119,7 +122,19 @@ class Point2D():
     def dist(self,x,y):
         return math.sqrt((self.x-x)**2+(self.y-y)**2)
 
-
+class Polyligne2D():
+    def __init__(self,ps):
+        self.ps = ps
+        self.lines2d = []
+        for p in ps:
+            p1 = p[0]
+            p2 = p[1]
+            self.lines2d.append(Line2D(p1,p2))
+    def dist(self,x,y):
+        distz = float("inf")
+        for line2d in self.lines2d:
+            distz = min(distz,line2d.dist(x,y))
+        return distz
 class Line2D():
     def __init__(self,p1=None,p2=None):
         self.p1 = p1 if p1 is not None and isinstance(p1, Point2D) else Point2D()
@@ -187,7 +202,74 @@ class Point3D():
         rotatedPoint = Point3D([rotatedVect.x,rotatedVect.y,rotatedVect.z])
         result = rotatedPoint.add(center)
         return result
-
+class Arc3D():
+    def __init__(self,entity):
+#         self.horiz = Vecteur([1,0,0])
+#         self.vert = Vecteur([0,1,0])
+        center = entity.point()
+        self.center = Point3D([center[0],center[1],0])
+        self.radius = entity.radius()
+        if entity.type == "CIRCLE":
+            self.startPhi = 0.
+            self.endPhi = 360.
+        else : 
+            self.startPhi = entity.startPhi()
+            self.endPhi=entity.endPhi()
+#         if self.startPhi>self.endPhi:
+#             tmp = self.startPhi
+#             self.startPhi = self.endPhi
+#             self.endPhi = tmp
+        self.calcbbox()
+    def getPolyline(self):
+        xx = []
+        yy = []
+        zz = []
+        nbseg = Utils.circleinterpolation
+        step = (self.endPhi-self.startPhi)/nbseg
+        alpha = self.startPhi
+#         lastp = self.center.addVect(self.horiz.multiply(self.radius))
+        for index in range(nbseg+1):
+            alpha +=step
+            x= self.center.x+math.cos(math.radians(alpha))*self.radius
+            y = self.center.y+math.sin(math.radians(alpha))*self.radius
+#             x = self.horiz.multiply(math.cos(alpha)).multiply(self.radius)
+#             y = self.vert.multiply(math.sin(alpha)).multiply(self.radius)
+            xx.append(x)
+            yy.append(y)
+            zz.append(0.)
+        self.maxx = max(xx)
+        self.minx = min(xx)
+        self.maxy = max(yy)
+        self.miny = min(yy)
+        self.maxz = max(zz)
+        self.minz = min(zz)
+        return [xx,yy,zz]
+#             p = self.center.addVect(x).addVect(y)
+#             self.lines3d.append(Line3D(lastp,p))
+#             lastp = p
+    def calcbbox(self):
+        self.getPolyline()
+class Spline3D():
+    def __init__(self,entity):
+            self.xyz = to_zip(entity[10], entity[20], entity[30])
+            self.flag = int(entity.get(70, 0))
+            self.closed = bool(self.flag & Entity.CLOSED)
+            self.knots = entity[40]
+            self.degree = entity[71]
+            self.calcbbox()
+    def getPolyline(self):
+        xx, yy, zz = spline.spline2Polyline(
+            self.xyz, int(self.degree), self.closed, 8, self.knots
+        )
+        self.maxx = max(xx)
+        self.minx = min(xx)
+        self.maxy = max(yy)
+        self.miny = min(yy)
+        self.maxz = max(zz)
+        self.minz = min(zz)
+        return [xx,yy,zz]
+    def calcbbox(self):
+        self.getPolyline()
 class Line3D():
     def __init__(self,p1=None,p2=None):
         self.p1 = p1 if p1 is not None and isinstance(p1, Point3D) else Point3D()
@@ -240,33 +322,33 @@ class EllipticArc3d():
         self.alphaend = ((math.atan2(sinalphaend,cosalphaend)*180./math.pi)+360.)%360
         if self.alphaend<= self.alphastart:
             self.alphaend +=360.
-class Circle3D():
-    def __init__(self,centerP3D=None,Radiusp3D=None,radiusvalue=None,normale=None):
-        self.lines3d = []
-        self.linself.centerP3D = centerP3D
-        self.radiusvalue = radiusvalue
-        self.normale = normale.normalize()
-        self.horiz = [1,0,0]
-        self.vert = self.normale.ProduitVectoriel(self.horiz)
-        if self.vert.module() > 0:
-            self.vert = self.vert.normalize()
-        else : 
-            self.horiz = [0,1,0]
-            self.vert = self.normale.ProduitVectoriel(self.horiz)
-            self.vert = self.vert.normalize()
-        self.add3dlines()
-    def add3dlines(self):
-        nbseg = Utils.circleinterpolation
-        step = 360./nbseg
-        alpha = 0.
-        lastp = self.centerP3D.addVect(self.horiz.multiply(self.radiusvalue))
-        for index in range(nbseg):
-            alpha +=step
-            x = self.horiz.multiply(math.cos(alpha)).multiply(self.radiusvalue)
-            y = self.vert.mult(math.sin(alpha)).multiply(self.radiusvalue)
-            p = self.centerP3D.addVect(x).addVect(y)
-            self.lines3d.append(Line3D(lastp,p))
-            lastp = p
+# class Circle3D():
+#     def __init__(self,centerP3D=None,Radiusp3D=None,radiusvalue=None,normale=None):
+#         self.lines3d = []
+#         self.linself.centerP3D = centerP3D
+#         self.radiusvalue = radiusvalue
+#         self.normale = normale.normalize()
+#         self.horiz = [1,0,0]
+#         self.vert = self.normale.ProduitVectoriel(self.horiz)
+#         if self.vert.module() > 0:
+#             self.vert = self.vert.normalize()
+#         else : 
+#             self.horiz = [0,1,0]
+#             self.vert = self.normale.ProduitVectoriel(self.horiz)
+#             self.vert = self.vert.normalize()
+#         self.add3dlines()
+#     def add3dlines(self):
+#         nbseg = Utils.circleinterpolation
+#         step = 360./nbseg
+#         alpha = 0.
+#         lastp = self.centerP3D.addVect(self.horiz.multiply(self.radiusvalue))
+#         for index in range(nbseg):
+#             alpha +=step
+#             x = self.horiz.multiply(math.cos(alpha)).multiply(self.radiusvalue)
+#             y = self.vert.mult(math.sin(alpha)).multiply(self.radiusvalue)
+#             p = self.centerP3D.addVect(x).addVect(y)
+#             self.lines3d.append(Line3D(lastp,p))
+#             lastp = p
 class Triangle3D():
     def __init__(self,Point1,Point2,Point3,Normale):
         self.p1 = Point1

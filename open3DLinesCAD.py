@@ -4,7 +4,7 @@ from rightPanel import RightPanel
 from leftPanel import LeftPanel
 from lowerPanel import LowerPanel
 from STLImporter import stlImporter
-
+from dxf import DXF
 
 class Panel(wx.Panel):
     def __init__(self, root):
@@ -36,6 +36,7 @@ class MainWindow(wx.Frame):
 #         menuAbout= filemenu.Append(wx.ID_ABOUT, "&About"," Information about this program")
         menuExit = filemenu.Append(wx.ID_EXIT,"E&xit"," Terminate the program")
         importStl = filemenu.Append(wx.ID_ANY,_("Import stl"))
+        importDxf = filemenu.Append(wx.ID_ANY,_("Import dxf"))
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu,"&File") # Adding the "filemenu" to the MenuBar
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
@@ -46,6 +47,7 @@ class MainWindow(wx.Frame):
 #         self.ShowFullScreen(True)
         self.Bind(wx.EVT_MENU, self.quit, menuExit)
         self.Bind(wx.EVT_MENU,self.importSTL,importStl)
+        self.Bind(wx.EVT_MENU,self.importDXF,importDxf)
     def setFocus(self):
         self.panel.cadWindow.SetFocus()
 
@@ -53,8 +55,23 @@ class MainWindow(wx.Frame):
         print (event)
         print("mainquit")
         self.Close(True)
-
+    def importDXF(self,event):
+        dialog = wx.FileDialog(None,
+                               message="Import DXF",
+                               wildcard="DXF files (*.dxf)|*.dxf",
+                               style = wx.FD_OPEN)
+        if dialog.ShowModal() == wx.ID_CANCEL:
+            return
+        pathname = dialog.GetPath()
+        dxf = DXF(filename=pathname)
+        dxf.readEntities()
+        self.panel.cadWindow.model.addDxf(dxf,pathname)
+        self.panel.cadWindow.fit2Win()
+#         t2 = time.time()
+        self.panel.cadWindow.refresh(None)
     def importSTL(self,event):
+
+
         dialog = wx.FileDialog(None,
                                message="Import STL",
                                wildcard="STL files (*.stl)|*.stl",
