@@ -207,7 +207,6 @@ class CADWindow(wx.Window):
                     lines.append([x1,y1,x2,y2])
                     pens.append(self.getPenColor(layer, color=ColorClass.select))
             elif isinstance(element2d,Polyligne2D) :
-                print("poly")
                 for ligne in element2d.lines2d :
                     p1 = ligne.p1
                     p2 = ligne.p2

@@ -215,7 +215,12 @@ class Arc3D():
         else : 
             self.startPhi = entity.startPhi()
             self.endPhi=entity.endPhi()
-#         if self.startPhi>self.endPhi:
+        print ("startphi",self.startPhi)
+        print ("endphi",self.endPhi)
+#         if entity._invert :
+#             print("invert")
+        if self.startPhi>self.endPhi:
+            self.startPhi -= 360.
 #             tmp = self.startPhi
 #             self.startPhi = self.endPhi
 #             self.endPhi = tmp
