@@ -4,7 +4,7 @@ from Camera import Camera
 from stateMachine import LineStateMachine,SelectStateMachine,\
     ParallelStateMachine,TranslateStateMachine, RotateStateMachine,\
     CircleStateMachine
-from geometry import Line3D,Vecteur,Point3D,Line2D,Polyligne2D
+from geometry import Line3D,Vecteur,Point3D,Line2D,Polyligne2D,Point2D
 from Utils import ColorClass,StateMachineList#,CADWindowStates,
 from numpy.core.defchararray import center
 
@@ -386,7 +386,7 @@ class CADWindow(wx.Window):
         scale = max(abs(pmax2d.x - pmin2d.x )/ self.size[0],abs(pmax2d.y- pmin2d.y)/self.size[1])
         offsetx=(pmax2d.x + pmin2d.x )/2.-self.size[0]/2.
         offsety =(pmax2d.y+pmin2d.y/2.)-self.size[1]/2.
-        self.cam.setScaleAndOffset(scale=1./scale*self.cam.scale,offsetx=int(self.cam.offsetx-offsetx),offsety=int(self.cam.offsety-offsety))
+        self.cam.setScaleAndOffset(scale=0.5/scale*self.cam.scale,offsetx=int(self.cam.offsetx-offsetx),offsety=int(self.cam.offsety-offsety))
         self.cam.setRotationMatrix()
         self.stateMachine.rotate()
         self.refresh()
@@ -394,14 +394,14 @@ class CADWindow(wx.Window):
     def pluszoom(self,event):
         x,y = event.x,event.y
 #         self.cam.scale *=1.1
-        self.cam.setScaleAndOffset(scale=self.cam.scale*1.1,offsetx=x,offsety=y)
+        self.cam.setScaleAndOffset(scale=self.cam.scale*1.1)#,offsetx=x,offsety=y)
         self.cam.setRotationMatrix()
         self.stateMachine.rotate()
         self.refresh(event)
     def minuszoom(self,event):
         x,y = event.x,event.y
 #         self.cam.scale /=1.1
-        self.cam.setScaleAndOffset(scale=self.cam.scale/1.1,offsetx=x,offsety=y)
+        self.cam.setScaleAndOffset(scale=self.cam.scale/1.1)#,offsetx=x,offsety=y)
         self.cam.setRotationMatrix()
         self.stateMachine.rotate()
         self.refresh(event)

@@ -264,7 +264,7 @@ class Spline3D():
             self.calcbbox()
     def getPolyline(self):
         xx, yy, zz = spline.spline2Polyline(
-            self.xyz, int(self.degree), self.closed, 8, self.knots
+            self.xyz, int(self.degree), self.closed, 2, self.knots
         )
         self.maxx = max(xx)
         self.minx = min(xx)
@@ -273,8 +273,16 @@ class Spline3D():
         self.maxz = max(zz)
         self.minz = min(zz)
         return [xx,yy,zz]
+    
     def calcbbox(self):
         self.getPolyline()
+
+#     def translate(self,p):
+#         result = Line3D(self.p1.add(p),self.p2.add(p))
+#         return result
+#     def rotate(self,center,axis,angle):
+#         result = Line3D(self.p1.rotate(center,axis,angle),self.p2.rotate(center,axis,angle))
+#         return result
 class Line3D():
     def __init__(self,p1=None,p2=None):
         self.p1 = p1 if p1 is not None and isinstance(p1, Point3D) else Point3D()
