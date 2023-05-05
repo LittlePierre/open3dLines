@@ -162,7 +162,80 @@ class CubicSpline:
     # -----------------------------------------------------------------------
     def derivative(self, C, x):
         return (3.0 * C[0] * x + 2.0 * C[1]) * x + C[2]
-
+class PointSpline():
+    def __init__(self,x,y,z):
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
+    def __mul__(self,k):
+        return PointSpline(self.x*k,self.y*k,self.z*k)
+    def __add__(self,other):
+        return PointSpline(self.x+other.x,self.y+other.y,self.z+other.z)
+    def __sub__(self,other):
+        return PointSpline(self.x-other.x,self.y-other.y,self.z-other.z)
+#i inidice du point
+#r rank
+#t knots
+# x value to parse
+# ControlPoints
+# k degree
+def w(i,r,t,x,k):
+    denom = (t[i+k-r+1]-t[i])
+    num1 = (x-t[i])
+    if denom == 0.:
+        denom = 1.
+        num1 = 1.
+    return num1/denom
+def recurse(i,r,t,x,ControlPoints,k):
+    if r-1 == 0:
+        p1 = ControlPoints[i]*w(i,r,t,x,k)
+        p2 = ControlPoints[i-1]*(1.-w(i,r,t,x,k))
+    else :
+        p1 = recurse(i,r-1,t,x,ControlPoints,k)*w(i,r,t,x,k)
+        p2  = recurse(i-1,r-1,t,x,ControlPoints,k)*(1.-w(i,r,t,x,k))
+    return p1+p2
+def findtj(knots,x):
+    for index in range(len(knots)) :
+        if x >= knots[index] and x<= knots[index+1]:
+            return index
+    print( "index NOT FOUND")
+def spline2Polyline3(xyz, degree, closed, segments, knots):
+    segments = 20
+    N = len(xyz)
+    x0 = 0.
+    x1 = 1.
+    Nsegs = N* segments
+    k = degree
+    if closed :
+        xyz = xyz[-k:]+xyz+xyz[:k]
+        N = len(xyz)
+        x0 = float(k/2.)/float(N-k)
+        x1 = float(N-k-k/2.)/float(N-k)
+        Nsegs = (N)* segments
+    knots = [0.]*(k+1)+[float(i)/(N-k) for i in range(1,N-k)]+[1.]*(k+1)
+    u = x0
+    Points = []
+    x =[]
+    y = []
+    z = []
+    for point in xyz :
+        Points.append(PointSpline(point[0],point[1],point[2]))
+    while u <= x1 :
+        j = findtj(knots,u)
+        result = recurse(j,degree,knots,u,Points,degree)
+        x.append(result.x)
+        y.append(result.y)
+        z.append(result.z)
+        u += (x1-x0)/Nsegs
+    if closed :
+        x.append(x[0])
+        y.append(y[0])
+        z.append(z[0])
+    else :
+        x.append(Points[-1].x)
+        y.append(Points[-1].y)
+        z.append(Points[-1].z)
+    return x,y,z
 
 # -----------------------------------------------------------------------------
 # Convert a B-spline to polyline with a fixed number of segments
@@ -170,6 +243,7 @@ class CubicSpline:
 # FIXME to become adaptive
 # -----------------------------------------------------------------------------
 def spline2Polyline(xyz, degree, closed, segments, knots):
+    return spline2Polyline3(xyz, degree, closed, segments, knots)
     # Check if last point coincide with the first one
     if (bmath.Vector(xyz[0]) - bmath.Vector(xyz[-1])).length2() < 1e-10:
         # it is already closed, treat it as open
